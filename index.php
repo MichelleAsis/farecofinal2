@@ -4,15 +4,17 @@
     $avatar = isset($_SESSION['avatar']) ? $_SESSION['avatar'] : 'images/profuser.png';
 
     // Check if a tag parameter is provided in the URL
-    if(isset($_GET['tag'])) {
-        $selectedTag = $_GET['tag'];
-        $sql = "SELECT title, content, likes, tags, acc_user, image FROM post WHERE tags LIKE '%$selectedTag%'";
-    } else {
-        // If no tag parameter is provided, fetch all posts
-        $sql = "SELECT title, content, likes, tags, acc_user, image FROM post";
-    }
+   // Check if a tag parameter is provided in the URL
+if(isset($_GET['tag'])) {
+    $selectedTag = $_GET['tag'];
+    $sql = "SELECT PID, title, content, likes, tags, acc_user, image FROM post WHERE tags LIKE '%$selectedTag%'";
+} else {
+    // If no tag parameter is provided, fetch all posts
+    $sql = "SELECT PID, title, content, likes, tags, acc_user, image FROM post";
+}
 
-    $result = mysqli_query($con, $sql);
+
+    $result = mysqli_query($con, $sql); 
 
     ?>
 <!DOCTYPE html>
@@ -51,7 +53,43 @@
     </div>
 
     <!-- Pop-up panel for posting -->
-    <div class="popup-post" id="postingPanel">
+    <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create a New Post</title>
+    <style>
+        .image-container {
+            display: flex;
+            flex-wrap: wrap;
+        }
+        .image-container img {
+            width: 150px;
+            height: auto;
+            margin: 5px;
+            cursor: pointer;
+        }
+        .image-container img.selected {
+            border: 2px solid blue;
+        }
+    </style>
+    <script>
+        function selectImage(imagePath) {
+            // Remove 'selected' class from all images
+            let images = document.querySelectorAll('.image-container img');
+            images.forEach(img => img.classList.remove('selected'));
+
+            // Add 'selected' class to the clicked image
+            let selectedImage = document.querySelector(`img[src="${imagePath}"]`);
+            selectedImage.classList.add('selected');
+
+            // Set hidden input value to selected image path
+            document.getElementById('selectedImagePath').value = imagePath;
+        }
+    </script>
+</head>
+   <div class="popup-post" id="postingPanel">
         <div class="popup-content">
             <header>
                 <h1>Create a New Post</h1>
@@ -64,27 +102,14 @@
                     <label for="content">Content:</label><br>
                     <textarea id="content" name="content" rows="4" cols="50" required></textarea><br><br>
 
-                    <div id="imageContainer" class="horizontal-scroll">
-    <!-- Combined images will be dynamically inserted here -->
-</div><br>
-
-
                     <!-- Image container -->
-                    <div id="imageContainer" class="horizontal-scroll">
-                    <!-- Image will be dynamically inserted here -->
-                    <?php
-                    $userFolder = 'accounts/' . $_SESSION['username'] . '/';
-                    $imageFiles = glob($userFolder . 'CombinedOutfit*.jpg');  // Get all combined image files
+                    <label for="image">Image:</label>
+                    <input type="file" id="image" name="image" accept="image/*"><br><br>
                     
-                    if (!empty($imageFiles)) {
-                        foreach ($imageFiles as $imagePath) {
-                            echo '<img src="' . $imagePath . '" alt="Combined Image" onclick="selectImage(this)">';
-                        }
-                    } else {
-                        echo '<p>No combined images found.</p>';
-                    }
-                    ?>
-                </div>
+
+
+                    <!-- Hidden input for selected image path -->
+                    <input type="hidden" id="selectedImagePath" name="selectedImagePath">
 
                     <!-- Tags -->
                     <label>Tags:</label><br>
@@ -104,6 +129,7 @@
             </main>
         </div>
     </div>
+
 
 
    
@@ -204,7 +230,6 @@
     </div>
     </div>
 
-
     <section id="newsfeed" class="scrollable">
     <?php
     if (mysqli_num_rows($result) > 0) {
@@ -218,7 +243,11 @@
             echo "<p><strong>Likes:</strong> " . htmlspecialchars($row['likes']) . "</p>";
             echo "<p><strong>Tags:</strong> " . htmlspecialchars($row['tags']) . "</p>";
             echo "<p><strong>Posted by:</strong> " . htmlspecialchars($row['acc_user']) . "</p>";
-             echo "<button class='save-button'>Save</button>";
+            echo "<button class='save-button'>Save</button>";
+            echo "<form method='post' action='delete_post.php' style='display:inline;'>";
+            echo "<input type='hidden' name='PID' value='" . htmlspecialchars($row['PID']) . "'>";
+            echo "<button type='submit' class='delete-button'>Delete</button>";
+            echo "</form>";
             echo "</div>";
         }
     } else {
@@ -228,6 +257,7 @@
     mysqli_close($con);
     ?>
 </section>
+
 
 
 <script>
@@ -432,8 +462,8 @@ function saveImageToDevice() {
     var ctx = canvas.getContext('2d');
 
     // Set canvas dimensions to match the desired output size
-    var canvasWidth = 600; // Set canvas width
-    var canvasHeight = 800; // Set canvas height
+    var canvasWidth = 300; // Set canvas width
+    var canvasHeight = 200; // Set canvas height
     canvas.width = canvasWidth;
     canvas.height = canvasHeight;
 
@@ -494,6 +524,7 @@ function saveImageToDevice() {
 
 
 </script>
+
 
 </body>
 </html>
