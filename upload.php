@@ -1,6 +1,5 @@
-// upload.php
-<?php
 
+<?php
 if (isset($_POST['submit']) && isset($_FILES['image'])) {
     include "connection.php"; // Make sure this path is correct
 
